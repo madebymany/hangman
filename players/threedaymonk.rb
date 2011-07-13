@@ -44,9 +44,9 @@ private
       possible_words.select{ |w| w=~ regexp }
     }
 
-    total = all.inject(0){ |a,e| a + e.length }
-    if (total - pattern.split("/").length) < threshold
-      all.map{ |w| w[rand(w.length)] }.join("/")
+    total = all.inject(1){ |a,e| a * e.length }
+    if (total - pattern.split("/").length) < (threshold + @phrases_played.length)
+      guess_phrase(all)
     else
       nil
     end
@@ -60,6 +60,13 @@ private
                        map{ |l,f| l }
 
     best(candidates - @letters_played)
+  end
+
+  def guess_phrase(all)
+    loop do
+      guessed = all.map{ |w| w[rand(w.length)] }.join("/")
+      return guessed unless @phrases_played.include?(guessed)
+    end
   end
 
   def best(a)
