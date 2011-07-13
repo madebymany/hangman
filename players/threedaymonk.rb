@@ -7,17 +7,21 @@ class ThreeDayMonkPlayer
   # Prepares for a new game (no action required for this player).
   def new_game(dictionary)
     @dictionary = dictionary
-    @played = []
+    @letters_played = []
+    @phrases_played = []
     @rejected = []
   end
 
   # For each turn, show a prompt to the user and return what was typed.
   def take_turn(pattern)
     guess = exact_phrase(pattern)
-    return guess if guess
+    if guess
+      @phrases_played << guess
+      return guess
+    end
 
     most_likely(pattern).tap{ |play|
-      @played << play
+      @letters_played << play
     }
   end
 
@@ -28,8 +32,7 @@ private
   end
 
   def exact_phrase(pattern)
-    rejected = @played - pattern.scan(/[a-z]/)
-    reject_pattern = rejected.any? && Regexp.new("[" + rejected.join("") + "]")
+    reject_pattern = rejection_pattern(pattern)
     if reject_pattern
       possible_words = @dictionary.select{ |w| w !~ reject_pattern }
     else
@@ -56,7 +59,7 @@ private
     candidates = freqs.sort_by{ |l,f| -f }.
                        map{ |l,f| l }
 
-    best(candidates - @played)
+    best(candidates - @letters_played)
   end
 
   def best(a)
@@ -77,9 +80,13 @@ private
     Regexp.new("^" + wpat.gsub("_", ".") + "$")
   end
 
+  def rejection_pattern(pattern)
+    rejected = @letters_played - pattern.scan(/[a-z]/)
+    rejected.any? && Regexp.new("[" + rejected.join("") + "]")
+  end
+
   def dictionary_for_turn(pattern)
-    rejected = @played - pattern.scan(/[a-z]/)
-    reject_pattern = rejected.any? && Regexp.new("[" + rejected.join("") + "]")
+    reject_pattern = rejection_pattern(pattern)
     [].tap{ |result|
       pattern.split("/").each do |known|
         regexp = wpat_regexp(known)
