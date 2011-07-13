@@ -92,18 +92,3 @@ private
     }
   end
 end
-
-class ThreeDayMonkFuzzyPlayer < ThreeDayMonkPlayer
-  def name
-    "threedaymonk (fuzzy)"
-  end
-
-private
-  def best(a)
-    a[rand([2, a.length].min)]
-  end
-
-  def threshold
-    3
-  end
-end
